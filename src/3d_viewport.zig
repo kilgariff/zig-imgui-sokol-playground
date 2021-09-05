@@ -21,19 +21,59 @@ pub const ViewportState = struct {
     max : c.ImVec2 = c.ImVec2 { .x = 0, .y = 0 },
     size : c.ImVec2 = c.ImVec2 { .x = 0, .y = 0 },
 
-    camera_rot : c.hmm_vec3 = c.hmm_vec3 { .X = 0.0, .Y = 0.0, .Z = 0.0 },
+    //camera_rot : c.hmm_vec3 = c.hmm_vec3 { .X = 0.0, .Y = 0.0, .Z = 0.0 },
+
+    camera_rot : c.vec3 = undefined,
 };
 
-pub fn compute_mvp(rotate : c.hmm_vec3, aspect : f32, eye_dist : f32) c.hmm_mat4 {
+fn to_radians(degrees : f32) f32 {
+    return degrees * std.math.pi / 180.0;
+}
 
-    var proj = c.Perspective(45.0, aspect, 0.01, 10.0);
-    var view = c.LookAt(c.Vec3(2.0, 3.5, eye_dist), c.Vec3(0.0, 0.0, 0.0), c.Vec3(0.0, 1.0, 0.0));
-    var view_proj = c.MultiplyMat4(proj, view);
-    var rxm = c.Rotate(rotate.unnamed_0.X, c.Vec3(1.0, 0.0, 0.0));
-    var rym = c.Rotate(rotate.unnamed_0.Y, c.Vec3(0.0, 1.0, 0.0));
-    var rzm = c.Rotate(rotate.unnamed_0.Z, c.Vec3(0.0, 0.0, 1.0));
-    var model = c.MultiplyMat4(c.MultiplyMat4(rzm, rym), rxm);
-    var mvp = c.MultiplyMat4(view_proj, model);
+pub fn compute_mvp(rotate : c.vec3, aspect : f32, eye_dist : f32) c.mat4 {
+
+    var proj : c.mat4 = undefined;
+    c.glm_perspective(45.0, aspect, 0.01, 10.0, &proj);
+
+    var view : c.mat4 = undefined;
+    var eye : c.vec3 = c.vec3 {2.0, 3.5, eye_dist};
+    var centre : c.vec3 = c.vec3 {0, 0, 0};
+    var up : c.vec3 = c.vec3 {0, 1, 0};
+
+    c.glm_lookat(&eye,
+                 &centre,
+                 &up,
+                 &view);
+
+    var view_proj : c.mat4 = undefined;
+    c.glm_mat4_mul(&proj, &view, &view_proj);
+
+    var rxm : c.mat4 = undefined;
+    var rym : c.mat4 = undefined;
+    var rzm : c.mat4 = undefined;
+
+    c.glm_mat4_identity(&rxm);
+    c.glm_mat4_identity(&rym);
+    c.glm_mat4_identity(&rzm);
+
+    var r_vec = c.vec3 {1, 0, 0};
+    c.glm_rotate(&rxm, to_radians(rotate[0]), &r_vec);
+
+    r_vec = c.vec3 {0, 1, 0};
+    c.glm_rotate(&rym, to_radians(rotate[1]), &r_vec);
+
+    r_vec = c.vec3 {0, 0, 1};
+    c.glm_rotate(&rzm, to_radians(rotate[2]), &r_vec);
+
+    var temp1 : c.mat4 = undefined;
+    c.glm_mat4_mul(&rym, &rxm, &temp1);
+
+    var temp2 : c.mat4 = undefined;
+    c.glm_mat4_mul(&rzm, &temp1, &temp2);
+
+    var mvp : c.mat4 = undefined;
+    c.glm_mat4_mul(&view_proj, &temp2, &mvp);
+
     return mvp;
 }
 
@@ -193,7 +233,7 @@ pub fn do_3d_viewport(viewport : *ViewportState) void {
 
     var mvp = compute_mvp(viewport.camera_rot, w / h, 2.0);
     var vs_params = glsl.vs_params_t {
-        .mvp = @ptrCast(*[16]f32, &mvp.Elements[0][0]).*,
+        .mvp = @ptrCast(*[16]f32, &mvp[0][0]).*,
     };
 
     c.sg_begin_pass(viewport.pass, &viewport.pass_action);

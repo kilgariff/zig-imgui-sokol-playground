@@ -19,9 +19,47 @@ pub fn build(b: *std.build.Builder) anyerror!void {
     exe.addIncludeDir("../src/");
     exe.setBuildMode(mode);
 
-    const cFlags = if (is_macos) [_][]const u8{ "-std=c99", "-ObjC", "-fobjc-arc" } else [_][]const u8{"-std=c99"};
+    const cFlags = if (is_macos) [_][]const u8{ "-std=c99", "-ObjC", "-fobjc-arc" } else [_][]const u8{"-std=c99", "-mno-avx"};
     exe.addCSourceFile("../src/compile_sokol.c", &cFlags);
 
+    // Attempt to add cglm
+    exe.addIncludeDir("../src/cglm/include/");
+    exe.addIncludeDir("../src/cglm/include/cglm");
+    exe.addCSourceFile("../src/cglm/src/euler.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/affine.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/io.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/quat.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/cam.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/vec2.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/vec3.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/vec4.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/mat2.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/mat3.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/mat4.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/plane.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/frustum.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/box.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/project.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/sphere.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/ease.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/curve.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/bezier.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/ray.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/affine2d.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/persp_lh_zo.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/persp_rh_zo.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/persp_lh_no.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/persp_rh_no.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/ortho_lh_zo.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/ortho_rh_zo.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/ortho_lh_no.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/ortho_rh_no.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/view_lh_zo.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/view_rh_zo.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/view_lh_no.c", &cFlags);
+    exe.addCSourceFile("../src/cglm/src/clipspace/view_rh_no.c", &cFlags);
+
+    // ImGui & cimgui
     const cpp_args = [_][]const u8{ "-Wno-deprecated-declarations", "-Wno-return-type-c-linkage", "-fno-exceptions", "-fno-threadsafe-statics" };
     exe.addCSourceFile("../src/cimgui/imgui/imgui.cpp", &cpp_args);
     exe.addCSourceFile("../src/cimgui/imgui/imgui_demo.cpp", &cpp_args);

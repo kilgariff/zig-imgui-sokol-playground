@@ -143,9 +143,9 @@ export fn update() void {
 
         c.igSeparator();
 
-        _ = c.igSliderFloat("Rotate X", &viewportState.camera_rot.unnamed_0.X, 0.0, 360.0, "%.3f", 1.0);
-        _ = c.igSliderFloat("Rotate Y", &viewportState.camera_rot.unnamed_0.Y, 0.0, 360.0, "%.3f", 1.0);
-        _ = c.igSliderFloat("Rotate Z", &viewportState.camera_rot.unnamed_0.Z, 0.0, 360.0, "%.3f", 1.0);
+        _ = c.igSliderFloat("Rotate X", &viewportState.camera_rot[0], 0.0, 360.0, "%.3f", 1.0);
+        _ = c.igSliderFloat("Rotate Y", &viewportState.camera_rot[1], 0.0, 360.0, "%.3f", 1.0);
+        _ = c.igSliderFloat("Rotate Z", &viewportState.camera_rot[2], 0.0, 360.0, "%.3f", 1.0);
 
         _ = c.igSliderFloat("float", &f, 0.0, 1.0, "%.3f", 1.0);
         _ = c.igColorEdit3("clear color", &state.pass_action.colors[0].value.r, 0);
