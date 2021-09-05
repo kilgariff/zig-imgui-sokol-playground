@@ -10,5 +10,6 @@ pub usingnamespace @cImport({
     @cInclude("sokol/sokol_glue.h");
     @cDefine("HANDMADE_MATH_NO_SSE", "");
     @cDefine("HANDMADE_MATH_IMPLEMENTATION", "");
+    @cDefine("HMM_PREFIX", "");
     @cInclude("handmade_math/HandmadeMath.h");
 });

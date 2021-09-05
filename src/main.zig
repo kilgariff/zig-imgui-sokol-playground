@@ -2,7 +2,6 @@ const std = @import("std");
 const c = @import("c.zig");
 
 usingnamespace @import("entity.zig");
-
 usingnamespace @import("3d_viewport.zig");
 
 const State = struct {
@@ -19,6 +18,7 @@ var show_another_window: bool = false;
 var display_menu: bool = false;
 var f: f32 = 0.0;
 var dock_builder_initialised = false;
+var viewportState : ViewportState = undefined;
 
 // Constants for ImGui docking.
 const fullscreen_window_name = "Fullscreen Window";
@@ -37,6 +37,9 @@ pub fn main() void {
     app_desc.cleanup_cb = cleanup;
     app_desc.event_cb = event;
     app_desc.window_title = "Editor";
+    app_desc.fullscreen = true;
+    app_desc.enable_dragndrop = false;
+    
     _ = c.sapp_run(&app_desc);
 }
 
@@ -44,10 +47,12 @@ pub fn main() void {
 export fn init() void {
     var desc = std.mem.zeroes(c.sg_desc);
     desc.context = c.sapp_sgcontext();
+
     c.sg_setup(&desc);
     c.stm_setup();
 
     var imgui_desc = std.mem.zeroes(c.simgui_desc_t);
+
     c.simgui_setup(&imgui_desc);
 
     var io = c.igGetIO();
@@ -91,6 +96,21 @@ export fn update() void {
     var show_flag = true;
     _ = c.igBegin(fullscreen_window_name, &show_flag, window_flags);
 
+    if (c.igBeginMainMenuBar())
+    {
+        if (c.igBeginMenu("File", true))
+        {
+            if (c.igMenuItem_Bool("Exit", "", false, true))
+            {
+                c.sapp_request_quit();
+            }
+
+            c.igEndMenu();
+        }
+
+        c.igEndMainMenuBar();
+    }
+
     const main_dockspace_id = c.igGetID_Str(main_dockspace_name);
 
     // Lazily initialise dockspace inside Fullscreen Window.
@@ -123,6 +143,10 @@ export fn update() void {
 
         c.igSeparator();
 
+        _ = c.igSliderFloat("Rotate X", &viewportState.camera_rot.unnamed_0.X, 0.0, 360.0, "%.3f", 1.0);
+        _ = c.igSliderFloat("Rotate Y", &viewportState.camera_rot.unnamed_0.Y, 0.0, 360.0, "%.3f", 1.0);
+        _ = c.igSliderFloat("Rotate Z", &viewportState.camera_rot.unnamed_0.Z, 0.0, 360.0, "%.3f", 1.0);
+
         _ = c.igSliderFloat("float", &f, 0.0, 1.0, "%.3f", 1.0);
         _ = c.igColorEdit3("clear color", &state.pass_action.colors[0].value.r, 0);
         if (c.igButton("Test Window", c.ImVec2{ .x = 0.0, .y = 0.0 })) show_test_window = !show_test_window;
@@ -150,7 +174,7 @@ export fn update() void {
     c.igSetNextWindowDockID(main_dockspace_id, c.ImGuiCond_FirstUseEver);
     c.igPushStyleVar_Vec2(c.ImGuiStyleVar_WindowPadding, c.ImVec2 { .x = 0.0, .y = 0.0 });
     if (c.igBegin(viewport_window_name, &showing_3d_viewport, 0)) {
-        do_3d_viewport();
+        do_3d_viewport(&viewportState);
     }
     c.igPopStyleVar(1);
 
