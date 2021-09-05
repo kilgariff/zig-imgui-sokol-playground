@@ -1,4 +1,15 @@
-# sokol-zig-examples
+# zig-imgui-sokol-playground
+
+This is a fork of jeffkdev/sokol-zig-examples which I'm using a starting point to experiment with Zig, Sokol and ImGui in the same project. Development system is Windows x64 but I'll update this to support macOS from time to time.
+
+Current Goals:
+* Build a simple editor that uses ImGui's docking branch.
+* Render some 3D objects into a viewport in the editor.
+* Use zig reflection to serialise and deserialise game entities.
+* more to come...
+
+Original README below:
+----
 
 Some of the Sokol examples running in Zig 0.8.0 (June 2021). Intended to be used as a reference or starting point for anyone looking to use Zig make games. Working platforms:
  - Windows (OpenGL)
