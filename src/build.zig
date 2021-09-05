@@ -1,5 +1,5 @@
 const std = @import("std");
-const builtin = @import("builtin");
+const builtin = std.builtin;
 
 const build_root = "../build/";
 
@@ -14,7 +14,7 @@ pub fn build(b: *std.build.Builder) anyerror!void {
 
     // Probably can take command line arg to build different examples
     // For now rename the mainFile const below (ex: "example_triangle.zig")
-    const mainFile = "example_triangle.zig";
+    const mainFile = "imgui_docking_test.zig";
     var exe = b.addExecutable("program", "../src/" ++ mainFile);
     exe.addIncludeDir("../src/");
     exe.setBuildMode(mode);
@@ -27,6 +27,7 @@ pub fn build(b: *std.build.Builder) anyerror!void {
     exe.addCSourceFile("../src/cimgui/imgui/imgui_demo.cpp", &cpp_args);
     exe.addCSourceFile("../src/cimgui/imgui/imgui_draw.cpp", &cpp_args);
     exe.addCSourceFile("../src/cimgui/imgui/imgui_widgets.cpp", &cpp_args);
+    exe.addCSourceFile("../src/cimgui/imgui/imgui_tables.cpp", &cpp_args);
     exe.addCSourceFile("../src/cimgui/cimgui.cpp", &cpp_args);
 
     // Shaders
@@ -34,6 +35,7 @@ pub fn build(b: *std.build.Builder) anyerror!void {
     exe.addCSourceFile("../src/shaders/triangle_compile.c", &[_][]const u8{"-std=c99"});
     exe.addCSourceFile("../src/shaders/instancing_compile.c", &[_][]const u8{"-std=c99"});
     exe.linkLibC();
+    exe.linkSystemLibrary("c++");
 
     if (is_windows) {
         //See https://github.com/ziglang/zig/issues/8531 only matters in release mode
@@ -53,7 +55,6 @@ pub fn build(b: *std.build.Builder) anyerror!void {
         exe.linkFramework("OpenGL");
         exe.linkFramework("Audiotoolbox");
         exe.linkFramework("CoreAudio");
-        exe.linkSystemLibrary("c++");
     } else {
         // Not tested
         @panic("OS not supported. Try removing panic in build.zig if you want to test this");

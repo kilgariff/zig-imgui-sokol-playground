@@ -8,4 +8,7 @@ pub usingnamespace @cImport({
     @cInclude("cimgui/cimgui.h");
     @cInclude("sokol/util/sokol_imgui.h");
     @cInclude("sokol/sokol_glue.h");
+    @cDefine("HANDMADE_MATH_NO_SSE", "");
+    @cDefine("HANDMADE_MATH_IMPLEMENTATION", "");
+    @cInclude("handmade_math/HandmadeMath.h");
 });
