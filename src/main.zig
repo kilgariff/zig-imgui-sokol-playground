@@ -16,9 +16,9 @@ var last_time: u64 = 0;
 var show_test_window: bool = false;
 var show_another_window: bool = false;
 var display_menu: bool = false;
-var f: f32 = 0.0;
 var dock_builder_initialised = false;
 var viewportState : ViewportState = undefined;
+var meshIdx : u8 = 0;
 
 // Constants for ImGui docking.
 const fullscreen_window_name = "Fullscreen Window";
@@ -143,11 +143,26 @@ export fn update() void {
 
         c.igSeparator();
 
+        var meshes = [2][]const u8 { "cube", "suzanne" };
+
+        if (c.igBeginCombo("Current Mesh", meshes[meshIdx].ptr, 0)) {
+            for (meshes) |mesh, i| {
+                if (c.igSelectable_Bool(mesh.ptr, i == meshIdx, 0, c.ImVec2 { .x = 0, .y = 0 })) {
+                    meshIdx = @intCast(u8, i);
+                }
+            }
+
+            c.igEndCombo();
+        }
+
+        c.igSeparator();
+
         _ = c.igSliderFloat("Rotate X", &viewportState.camera_rot[0], 0.0, 360.0, "%.3f", 1.0);
         _ = c.igSliderFloat("Rotate Y", &viewportState.camera_rot[1], 0.0, 360.0, "%.3f", 1.0);
         _ = c.igSliderFloat("Rotate Z", &viewportState.camera_rot[2], 0.0, 360.0, "%.3f", 1.0);
 
-        _ = c.igSliderFloat("float", &f, 0.0, 1.0, "%.3f", 1.0);
+        c.igSeparator();
+
         _ = c.igColorEdit3("clear color", &state.pass_action.colors[0].value.r, 0);
         if (c.igButton("Test Window", c.ImVec2{ .x = 0.0, .y = 0.0 })) show_test_window = !show_test_window;
         if (c.igButton("Another Window", c.ImVec2{ .x = 0.0, .y = 0.0 })) show_another_window = !show_another_window;

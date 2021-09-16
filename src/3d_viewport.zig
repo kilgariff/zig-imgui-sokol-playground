@@ -21,9 +21,10 @@ pub const ViewportState = struct {
     max : c.ImVec2 = c.ImVec2 { .x = 0, .y = 0 },
     size : c.ImVec2 = c.ImVec2 { .x = 0, .y = 0 },
 
-    //camera_rot : c.hmm_vec3 = c.hmm_vec3 { .X = 0.0, .Y = 0.0, .Z = 0.0 },
-
     camera_rot : c.vec3 = undefined,
+
+    mesh_idx : u8 = 0,
+    prev_mesh_idx : u8 = 0,
 };
 
 fn to_radians(degrees : f32) f32 {
@@ -167,16 +168,7 @@ fn init_viewport(viewport : *ViewportState, x : i32, y : i32) void {
         22, 21, 20, 23, 22, 20,
     };
 
-    var buffer_desc = std.mem.zeroes(c.sg_buffer_desc);
-    buffer_desc.size = vertices.len * @sizeOf(f32);
-    buffer_desc.data = .{ .ptr = &vertices[0], .size = buffer_desc.size };
-    viewport.bindings.vertex_buffers[0] = c.sg_make_buffer(&buffer_desc);
-
-    buffer_desc = std.mem.zeroes(c.sg_buffer_desc);
-    buffer_desc.type = .SG_BUFFERTYPE_INDEXBUFFER;
-    buffer_desc.size = indices.len * @sizeOf(u16);
-    buffer_desc.data = .{ .ptr = &indices[0], .size = buffer_desc.size };
-    viewport.bindings.index_buffer = c.sg_make_buffer(&buffer_desc);
+    load_viewport_mesh(viewport, vertices[0..], indices[0..]);
 
     const shader_desc = @ptrCast([*]const c.sg_shader_desc, glsl.cube_shader_desc(glsl.sg_query_backend()));
     viewport.shader = c.sg_make_shader(shader_desc);
@@ -193,7 +185,37 @@ fn init_viewport(viewport : *ViewportState, x : i32, y : i32) void {
     viewport.pipeline = c.sg_make_pipeline(&pipeline_desc);
 }
 
+fn load_viewport_mesh(viewport : *ViewportState, vertices : [] const f32, indices : [] const u16) void {
+    var buffer_desc = std.mem.zeroes(c.sg_buffer_desc);
+    buffer_desc.size = vertices.len * @sizeOf(f32);
+    buffer_desc.data = .{ .ptr = &vertices[0], .size = buffer_desc.size };
+    viewport.bindings.vertex_buffers[0] = c.sg_make_buffer(&buffer_desc);
+
+    buffer_desc = std.mem.zeroes(c.sg_buffer_desc);
+    buffer_desc.type = .SG_BUFFERTYPE_INDEXBUFFER;
+    buffer_desc.size = indices.len * @sizeOf(u16);
+    buffer_desc.data = .{ .ptr = &indices[0], .size = buffer_desc.size };
+    viewport.bindings.index_buffer = c.sg_make_buffer(&buffer_desc);
+}
+
+fn load_gltf_mesh_into_viewport(viewport : *ViewportState) void {
+
+    var options : c.cgltf_options = std.mem.zeroes(c.cgltf_options);
+    var data : [*c]c.cgltf_data = undefined;
+
+    var result : c.cgltf_result = c.cgltf_parse_file(&options, "../assets/suzanne.glb", &data);
+    if (@enumToInt(result) == c.cgltf_result_success) {
+        // TODO: use data
+        c.cgltf_free(data);
+    }
+}
+
 pub fn do_3d_viewport(viewport : *ViewportState) void {
+
+    if (viewport.mesh_idx == 1 and viewport.prev_mesh_idx != 1) {
+        load_gltf_mesh_into_viewport(viewport);
+        viewport.prev_mesh_idx = viewport.mesh_idx;
+    }
 
     var vMin = c.ImVec2 { .x = 0, .y = 0 };
     var vMax = c.ImVec2 { .x = 0, .y = 0 };
@@ -216,7 +238,7 @@ pub fn do_3d_viewport(viewport : *ViewportState) void {
         viewport.min = vMin;
         viewport.max = vMax;
 
-        // This is necessary so we don't get a scroll bar onthe window.
+        // This is necessary so we don't get a scroll bar on the viewport window.
         // Not sure how we'd turn off the border on the image.
         viewport.max.y -= 2;
 

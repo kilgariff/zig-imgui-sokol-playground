@@ -22,7 +22,7 @@ pub fn build(b: *std.build.Builder) anyerror!void {
     const cFlags = if (is_macos) [_][]const u8{ "-std=c99", "-ObjC", "-fobjc-arc" } else [_][]const u8{"-std=c99", "-mno-avx"};
     exe.addCSourceFile("../src/compile_sokol.c", &cFlags);
 
-    // Attempt to add cglm
+    // Add cglm
     exe.addIncludeDir("../src/cglm/include/");
     exe.addIncludeDir("../src/cglm/include/cglm");
     exe.addCSourceFile("../src/cglm/src/euler.c", &cFlags);
